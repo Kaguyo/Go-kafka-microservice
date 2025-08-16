@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./internal/config"
-	"./internal/consumer"
+	"go-kafka-microservice/internal/config"
+	"go-kafka-microservice/internal/consumer"
 )
 
 func main() {

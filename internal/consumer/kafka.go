@@ -2,21 +2,35 @@ package consumer
 
 import (
 	"encoding/json"
+	"fmt"
+	"go-kafka-microservice/internal/config"
+	"go-kafka-microservice/internal/service"
 
-	"../config"
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-func Start(cfg config.Config) {
-	c, _ := kafka.NewConsumer(&kafka.ConfigMap{
+func Start(cfg config.Config) error {
+	fmt.Printf("Iniciando consumidor Kafka para o tópico: %s\n", cfg.Topic)
+	cm := kafka.ConfigMap{
 		"bootstrap.servers": cfg.BootstrapServers,
 		"group.id":          cfg.GroupID,
 		"security.protocol": cfg.SecurityProtocol,
-		"sasl.mechanisms":   cfg.SaslMechanism,
-		"sasl.username":     cfg.Username,
-		"sasl.password":     cfg.Password,
 		"auto.offset.reset": "earliest",
-	})
+	}
+
+	if cfg.SaslMechanism != "" {
+		cm["sasl.mechanisms"] = cfg.SaslMechanism
+		cm["sasl.username"] = cfg.Username
+		cm["sasl.password"] = cfg.Password
+	}
+
+	c, err := kafka.NewConsumer(&cm)
+
+	if err != nil {
+		fmt.Printf("Erro ao criar consumidor Kafka: %v\n", err)
+		return err
+	}
+
 	c.SubscribeTopics([]string{cfg.Topic}, nil)
 
 	for {
@@ -26,11 +40,13 @@ func Start(cfg config.Config) {
 		}
 
 		var payload map[string]any
+		fmt.Print("Mensagem recebida: ", string(msg.Value))
 		if json.Unmarshal(msg.Value, &payload) != nil {
-			sendDLQ(cfg, msg.Value)
+			service.SendDLQ(cfg, msg.Value)
+			fmt.Printf("Erro ao deserializar a mensagem, enviando para DLQ", err)
 			continue
 		}
 
-		go sendToTarget(cfg, payload)
+		go service.SendToTarget(cfg, payload)
 	}
 }
