@@ -40,10 +40,10 @@ func Start(cfg config.Config) error {
 		}
 
 		var payload map[string]any
-		fmt.Print("Mensagem recebida: ", string(msg.Value))
+		fmt.Print("Mensagem recebida: ", string(msg.Value), "\n")
 		if json.Unmarshal(msg.Value, &payload) != nil {
 			service.SendDLQ(cfg, msg.Value)
-			fmt.Printf("Erro ao deserializar a mensagem, enviando para DLQ", err)
+			fmt.Printf("Erro ao deserializar a mensagem, enviando para DLQ", err, "\n")
 			continue
 		}
 
