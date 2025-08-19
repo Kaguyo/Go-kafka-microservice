@@ -6,7 +6,7 @@ import (
 	"go-kafka-microservice/internal/config"
 	"go-kafka-microservice/internal/service"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
 func Start(cfg config.Config) error {

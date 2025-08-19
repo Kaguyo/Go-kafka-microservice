@@ -3,7 +3,7 @@ module go-kafka-microservice
 go 1.22.2
 
 require (
-	github.com/confluentinc/confluent-kafka-go v1.9.2
+	github.com/confluentinc/confluent-kafka-go/v2 v2.11.1
 	github.com/gin-gonic/gin v1.10.1
 	github.com/spf13/viper v1.20.1
 )

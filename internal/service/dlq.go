@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go-kafka-microservice/internal/config"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
 func SendDLQ(cfg config.Config, value []byte) error {
