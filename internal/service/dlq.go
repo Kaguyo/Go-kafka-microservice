@@ -15,6 +15,7 @@ func SendDLQ(cfg config.Config, value []byte) error {
 		"sasl.mechanisms":   cfg.SaslMechanism,
 		"sasl.username":     cfg.Username,
 		"sasl.password":     cfg.Password,
+		"acks":              "1",
 	})
 	if err != nil {
 		return fmt.Errorf("falha ao criar Producer Kafka em DLQ: %w", err, "\n")
