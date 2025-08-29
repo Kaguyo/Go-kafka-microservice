@@ -13,6 +13,7 @@ func SendToTarget(cfg config.Config, payload map[string]any) {
 
 	b, _ := json.Marshal(payload)
 	req, _ := http.NewRequest(http.MethodPatch, cfg.TargetServiceURL, bytes.NewBuffer(b))
+	//logger
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{Timeout: 5 * time.Second}
@@ -21,5 +22,6 @@ func SendToTarget(cfg config.Config, payload map[string]any) {
 	if err != nil || resp.StatusCode >= 400 {
 		SendDLQ(cfg, b)
 		fmt.Printf("Erro ao enviar para o serviço alvo: %v, status: %d\n", err, resp.StatusCode)
+		//logger
 	}
 }

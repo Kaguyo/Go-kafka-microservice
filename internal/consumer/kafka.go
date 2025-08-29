@@ -11,6 +11,7 @@ import (
 
 func Start(cfg config.Config) error {
 	fmt.Printf("Iniciando consumidor Kafka para o tópico: %s\n", cfg.Topic)
+
 	cm := kafka.ConfigMap{
 		"bootstrap.servers": cfg.BootstrapServers,
 		"group.id":          cfg.GroupID,
@@ -18,14 +19,7 @@ func Start(cfg config.Config) error {
 		"auto.offset.reset": "earliest",
 	}
 
-	if cfg.SaslMechanism != "" {
-		cm["sasl.mechanisms"] = cfg.SaslMechanism
-		cm["sasl.username"] = cfg.Username
-		cm["sasl.password"] = cfg.Password
-	}
-
 	c, err := kafka.NewConsumer(&cm)
-
 	if err != nil {
 		fmt.Printf("Erro ao criar consumidor Kafka: %v\n", err)
 		return err
@@ -39,14 +33,28 @@ func Start(cfg config.Config) error {
 			continue
 		}
 
+		fmt.Println("Mensagem recebida:", string(msg.Value))
+		//logger
+
 		var payload map[string]any
-		fmt.Print("Mensagem recebida: ", string(msg.Value), "\n")
-		if json.Unmarshal(msg.Value, &payload) != nil {
+		if err := json.Unmarshal(msg.Value, &payload); err != nil {
+			fmt.Println("Erro ao deserializar JSON. Enviando para DLQ.")
 			service.SendDLQ(cfg, msg.Value)
-			fmt.Printf("Erro ao deserializar a mensagem, enviando para DLQ", err, "\n")
 			continue
 		}
 
+		_, hasOrdem := payload["ordemDeVenda"]
+		_, hasEtapa := payload["etapaAtual"]
+
+		if !hasOrdem || !hasEtapa {
+			fmt.Println("Campos obrigatórios ausentes. Enviando para DLQ.")
+			service.SendDLQ(cfg, msg.Value)
+			//logger
+			continue
+		}
+
+		// Tudo certo, processa
 		go service.SendToTarget(cfg, payload)
+		fmt.Println("Enviando para o serviço:", cfg.TargetServiceURL, "...")
 	}
 }

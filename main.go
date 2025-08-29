@@ -7,5 +7,6 @@ import (
 
 func main() {
 	cfg := config.Load()
+	//logger
 	consumer.Start(cfg)
 }
